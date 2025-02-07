@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento - Natanael Carvalho</title>
+    <style>
+        @media print {
+            body {
+                width: 210mm;
+                height: 297mm;
+                margin: 20mm auto;
+                font-size: 12pt;
+                background: none;
+                color: black;
+            }
+            button {
+                display: none;
+            }
+        }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            color: #333; 
+            text-align: center;
+            padding: 20px;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 800px;
+            margin: auto; 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #0056b3;
+        }
+        .data-orcamento {
+            text-align: right;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .produto { 
+            display: flex; 
+            align-items: center; 
+            background: #e1e1e1;
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-radius: 5px;
+            text-align: left;
+            gap: 15px;
+        }
+        .produto img { 
+            width: 100px; 
+            height: 100px; 
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .descricao {
+            flex-grow: 1;
+            font-size: 20px;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+        .valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0056b3;
+            min-width: 120px;
+            text-align: right;
+            cursor: pointer;
+        }
+        button {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #003d82;
+        }
+        .total {
+            font-size: 22px; 
+            font-weight: bold; 
+            color: #0056b3;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Orçamento - Natanael Carvalho</h2>
+        <p class="data-orcamento">Data: <span id="data-orcamento"></span></p>
+        <button onclick="adicionarProduto()">Adicionar Produto</button>
+        <div id="lista-produtos"></div>
+        <p class="total">Total: <span id="total">R$ 0,00</span></p>
+    </div>
+
+    <script>
+        // Exibe a data atual do orçamento
+        document.getElementById("data-orcamento").textContent = new Date().toLocaleDateString();
+
+        // Função para adicionar produto à lista
+        function adicionarProduto() {
+            let lista = document.getElementById('lista-produtos');
+            let div = document.createElement('div');
+            div.classList.add('produto');
+            
+            // Adiciona a imagem do produto
+            let inputImagem = document.createElement('input');
+            inputImagem.type = 'file';
+            inputImagem.accept = 'image/*';
+            inputImagem.style.display = 'none';
+            inputImagem.onchange = function(event) {
+                let img = document.createElement('img');
+                img.src = URL.createObjectURL(event.target.files[0]);
+                div.insertBefore(img, div.firstChild);
+            };
+            
+            // Botão para selecionar imagem
+            let labelImagem = document.createElement('button');
+            labelImagem.textContent = 'Selecionar Imagem';
+            labelImagem.onclick = function() { inputImagem.click(); };
+            
+            // Descrição do produto
+            let descricao = document.createElement('span');
+            descricao.classList.add('descricao');
+            descricao.textContent = 'Nome do Produto';
+            descricao.contentEditable = true;
+            descricao.onfocus = function() {
+                if (descricao.textContent === 'Nome do Produto') descricao.textContent = '';
+            };
+            
+            // Valor do produto
+            let valor = document.createElement('span');
+            valor.classList.add('valor');
+            valor.textContent = '0';  // Valor numérico inicial sem formatação
+            valor.onclick = function() {
+                let inputValor = document.createElement('input');
+                inputValor.type = 'number';
+                inputValor.value = 0; // Valor inicial
+                inputValor.onblur = function() {
+                    let valorFormatado = parseFloat(inputValor.value) || 0;
+                    valor.textContent = valorFormatado;  // Armazena o valor como número sem formatação
+                    div.replaceChild(valor, inputValor);
+                    calcularTotal();  // Recalcula o total ao alterar o valor
+                };
+                inputValor.onkeypress = function(event) {
+                    if (event.key === 'Enter') inputValor.blur();
+                };
+                div.replaceChild(inputValor, valor);
+                inputValor.focus();
+            };
+            
+            div.appendChild(labelImagem);
+            div.appendChild(inputImagem);
+            div.appendChild(descricao);
+            div.appendChild(valor);
+            lista.appendChild(div);
+            calcularTotal();  // Garante que o total seja atualizado
+        }
+        
+        // Função para calcular o total dos produtos
+        function calcularTotal() {
+            let total = 0;
+
+            // Coleta os valores de cada produto e soma
+            document.querySelectorAll('#lista-produtos .produto .valor').forEach(span => {
+                let valor = parseFloat(span.textContent) || 0; // Considera apenas o número
+                total += valor; // Soma o valor ao total
+            });
+
+            // Atualiza o valor total na tela
+            document.getElementById('total').textContent = 'R$ ' + total.toFixed(2).replace('.', ','); // Exibe o total com 2 casas decimais
+        }
+    </script>
+</body>
+</html>
