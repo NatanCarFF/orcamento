@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Velocidade</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        #startBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+
+        .loading {
+            display: none;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Teste de Velocidade de Internet</h1>
+    <p>Clique no botão abaixo para iniciar o teste.</p>
+    <button id="startBtn" onclick="startTest()">Iniciar Teste</button>
+    
+    <div class="loading" id="loading">Testando velocidade...</div>
+    <div class="result" id="result"></div>
+
+    <script>
+        async function startTest() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').innerHTML = '';
+
+            let fileUrl = 'https://speed.cloudflare.com/__down?bytes=5000000'; // 5 MB
+            let fileSize = 5 * 1024 * 1024; // 5 MB em bytes
+
+            let startTime = new Date().getTime(); // Marca o início do download
+            
+            try {
+                let response = await fetch(fileUrl, { cache: "no-store" }); 
+                await response.blob(); // Aguarda o download do arquivo
+
+                let endTime = new Date().getTime(); // Marca o fim do download
+                let duration = (endTime - startTime) / 1000; // Tempo em segundos
+
+                let speed = (fileSize / 1024 / 1024) / duration; // Velocidade em MB/s
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerHTML = `Velocidade de Download: ${speed.toFixed(2)} MB/s`;
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerHTML = 'Erro ao medir a velocidade. Tente novamente.';
+            }
+        }
+    </script>
+
+</body>
+</html>
