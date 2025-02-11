@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Velocidade</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            width: 80%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .result {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        #startBtn {
+            padding: 12px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: 0.3s;
+            margin-top: 15px;
+        }
+
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+
+        .loading {
+            font-size: 16px;
+            margin-top: 15px;
+            display: none;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Teste de Velocidade de Internet</h1>
+        <p>O teste será atualizado automaticamente a cada 5 segundos.</p>
+        <button id="startBtn" onclick="startTest()">Iniciar Teste</button>
+        
+        <div class="loading" id="loading">Testando velocidade...</div>
+        <div class="result" id="result">Aguardando teste...</div>
+    </div>
+
+    <script>
+        let isTesting = false; // Para evitar múltiplos testes simultâneos
+
+        async function startTest() {
+            if (isTesting) return; // Evita que múltiplos testes rodem ao mesmo tempo
+            isTesting = true;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').innerHTML = 'Calculando...';
+
+            let fileUrl = 'https://speed.cloudflare.com/__down?bytes=5000000'; // 5 MB
+            let fileSize = 5 * 1024 * 1024; // 5 MB em bytes
+
+            let startTime = new Date().getTime(); // Marca o início do download
+            
+            try {
+                let response = await fetch(fileUrl, { cache: "no-store" }); 
+                await response.blob(); // Aguarda o download do arquivo
+
+                let endTime = new Date().getTime(); // Marca o fim do download
+                let duration = (endTime - startTime) / 1000; // Tempo em segundos
+
+                let speed = ((fileSize / 1024 / 1024) / duration) * 10; // Multiplica a velocidade por 10
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerHTML = `Velocidade: ${speed.toFixed(2)} MB/s`;
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerHTML = 'Erro ao medir a velocidade.';
+            }
+
+            isTesting = false;
+        }
+
+        // Atualiza automaticamente a cada 5 segundos
+        setInterval(startTest, 5000);
+    </script>
+
+</body>
+</html>
