@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento - Natanael Carvalho</title>
+    <style>
+        @media print {
+            body {
+                width: 210mm;
+                height: 297mm;
+                margin: 20mm auto;
+                font-size: 12pt;
+                background: none;
+                color: black;
+            }
+            button {
+                display: none;
+            }
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #121212;
+            color: #00ffcc;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.5);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            width: 100px; /* Logo menor */
+        }
+        h2 {
+            color: #00ffcc;
+            margin: 0;
+        }
+        .data-orcamento {
+            text-align: right;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .produto {
+            display: flex;
+            align-items: center;
+            background: #262626;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            text-align: left;
+            gap: 15px;
+            border: 1px solid #00ffcc;
+        }
+        .produto img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .descricao {
+            flex-grow: 1;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ffcc;
+            min-width: 120px;
+            text-align: right;
+            cursor: pointer;
+        }
+        button {
+            background: #00ffcc;
+            color: #0a0a0a;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #009977;
+        }
+        .total {
+            font-size: 22px;
+            font-weight: bold;
+            color: #00ffcc;
+            margin-top: 20px;
+        }
+        .icons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .icon-button {
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://github.com/pcespaco/logo/blob/main/logoPcEspaco-removebg-preview.png?raw=true" alt="Logo" class="logo">
+            <h2>Orçamento - Natanael Carvalho</h2>
+        </div>
+        <p class="data-orcamento">Data: <span id="data-orcamento"></span></p>
+        <button onclick="adicionarProduto()">Adicionar Produto</button>
+        <button onclick="salvarComoPDF()">Salvar como PDF</button>
+        <div id="lista-produtos"></div>
+        <p class="total">Total: <span id="total">R$ 0,00</span></p>
+        
+        <!-- Ícones de salvar e zerar -->
+        <div class="icons-container">
+            <span class="icon-button" onclick="salvarInformacoes()">💾</span>
+            <span class="icon-button" onclick="zerarPagina()">🗑️</span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("data-orcamento").textContent = new Date().toLocaleDateString('pt-BR');
+
+        function adicionarProduto() {
+            let lista = document.getElementById('lista-produtos');
+            let div = document.createElement('div');
+            div.classList.add('produto');
+
+            let inputImagem = criarInputImagem(div);
+            let labelImagem = criarBotaoImagem(inputImagem);
+            let descricao = criarDescricaoProduto();
+            let valor = criarValorProduto(div);
+
+            div.appendChild(labelImagem);
+            div.appendChild(inputImagem);
+            div.appendChild(descricao);
+            div.appendChild(valor);
+            lista.appendChild(div);
+
+            calcularTotal();
+        }
+
+        function criarInputImagem(div) {
+            let inputImagem = document.createElement('input');
+            inputImagem.type = 'file';
+            inputImagem.accept = 'image/*';
+            inputImagem.style.display = 'none';
+            inputImagem.onchange = function(event) {
+                let img = document.createElement('img');
+                let reader = new FileReader();
+                reader.onload = function() {
+                    img.src = reader.result;
+                    div.insertBefore(img, div.firstChild);
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            };
+            return inputImagem;
+        }
+
+        function criarBotaoImagem(inputImagem) {
+            let labelImagem = document.createElement('button');
+            labelImagem.textContent = 'Selecionar Imagem';
+            labelImagem.onclick = function() { inputImagem.click(); };
+            return labelImagem;
+        }
+
+        function criarDescricaoProduto() {
+            let descricao = document.createElement('span');
+            descricao.classList.add('descricao');
+            descricao.textContent = 'Nome do Produto';
+            descricao.contentEditable = true;
+            return descricao;
+        }
+
+        function criarValorProduto(div) {
+            let valor = document.createElement('span');
+            valor.classList.add('valor');
+            valor.textContent = '0';
+            valor.onclick = function() {
+                let inputValor = document.createElement('input');
+                inputValor.type = 'number';
+                inputValor.value = parseFloat(valor.textContent) || 0;
+                inputValor.onblur = function() {
+                    let valorFormatado = parseFloat(inputValor.value) || 0;
+                    valor.textContent = valorFormatado.toFixed(2);
+                    div.replaceChild(valor, inputValor);
+                    calcularTotal();
+                };
+                inputValor.onkeypress = function(event) {
+                    if (event.key === 'Enter') inputValor.blur();
+                };
+                div.replaceChild(inputValor, valor);
+                inputValor.focus();
+            };
+            return valor;
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll('#lista-produtos .produto .valor').forEach(span => {
+                let valor = parseFloat(span.textContent) || 0;
+                total += valor;
+            });
+            document.getElementById('total').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        function salvarComoPDF() {
+            window.print();
+        }
+
+        function salvarInformacoes() {
+            const produtos = [];
+            document.querySelectorAll('#lista-produtos .produto').forEach(produto => {
+                const descricao = produto.querySelector('.descricao').textContent;
+                const valor = parseFloat(produto.querySelector('.valor').textContent) || 0;
+                const imgSrc = produto.querySelector('img') ? produto.querySelector('img').src : null;
+                produtos.push({ descricao, valor, imgSrc });
+            });
+
+            localStorage.setItem('orcamento', JSON.stringify(produtos));
+            alert('Orçamento salvo!');
+        }
+
+        function zerarPagina() {
+            localStorage.removeItem('orcamento');
+            document.getElementById('lista-produtos').innerHTML = '';
+            document.getElementById('total').textContent = 'R$ 0,00';
+            alert('Página zerada!');
+        }
+
+        // Carregar dados salvos ao iniciar a página
+        window.onload = function() {
+            const produtosSalvos = JSON.parse(localStorage.getItem('orcamento'));
+            if (produtosSalvos) {
+                produtosSalvos.forEach(produto => {
+                    let lista = document.getElementById('lista-produtos');
+                    let div = document.createElement('div');
+                    div.classList.add('produto');
+
+                    if (produto.imgSrc) {
+                        let img = document.createElement('img');
+                        img.src = produto.imgSrc;
+                        div.appendChild(img);
+                    }
+
+                    let descricao = document.createElement('span');
+                    descricao.classList.add('descricao');
+                    descricao.textContent = produto.descricao;
+                    descricao.contentEditable = true;
+
+                    let valor = document.createElement('span');
+                    valor.classList.add('valor');
+                    valor.textContent = produto.valor.toFixed(2);
+
+                    div.appendChild(descricao);
+                    div.appendChild(valor);
+                    lista.appendChild(div);
+                });
+                calcularTotal();
+            }
+        };
+    </script>
+</body>
+</html>
